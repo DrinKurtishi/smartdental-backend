@@ -1,0 +1,111 @@
+spring:
+  application:
+    name: smartdental-backend
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/smartdental}
+    username: ${DB_USERNAME:smartdental}
+    password: ${DB_PASSWORD:smartdental}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          time_zone: UTC
+    show-sql: ${JPA_SHOW_SQL:false}
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:changeme-google-client-id}
+            client-secret: ${GOOGLE_CLIENT_SECRET:changeme-google-client-secret}
+            scope: openid,profile,email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: always
+    include-binding-errors: always
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+smartdental:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  frontend:
+    base-url: ${FRONTEND_BASE_URL:http://localhost:5173}
+  jwt:
+    secret: ${JWT_SECRET:this-is-a-local-development-only-secret-key-please-change-me-in-prod-01}
+    access-token-expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:3600000}
+    refresh-token-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}
+    issuer: smartdental-api
+  aws:
+    region: ${AWS_REGION:us-east-1}
+    ses:
+      sender: ${SES_SENDER_EMAIL:no-reply@smartdental.example.com}
+      access-key: ${AWS_ACCESS_KEY_ID:}
+      secret-key: ${AWS_SECRET_ACCESS_KEY:}
+      enabled: ${SES_ENABLED:false}
+  ai:
+    translation:
+      provider: ${AI_PROVIDER:openai}
+      api-key: ${AI_API_KEY:}
+      model: ${AI_MODEL:gpt-4o-mini}
+      base-url: ${AI_BASE_URL:https://api.openai.com/v1}
+      enabled: ${AI_TRANSLATION_ENABLED:true}
+      timeout-ms: ${AI_TIMEOUT_MS:15000}
+  seed:
+    enabled: ${SEED_DATA_ENABLED:true}
+
+logging:
+  level:
+    root: INFO
+    com.smartdental: ${LOG_LEVEL:INFO}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:h2:mem:smartdental-test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: sa
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+smartdental:
+  seed:
+    enabled: false
+  aws:
+    ses:
+      enabled: false
+  ai:
+    translation:
+      enabled: true
+      api-key: test-key
