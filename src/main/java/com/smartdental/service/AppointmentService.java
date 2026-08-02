@@ -11,6 +11,7 @@ import com.smartdental.exception.ConflictException;
 import com.smartdental.exception.ResourceNotFoundException;
 import com.smartdental.repository.AppointmentRepository;
 import com.smartdental.repository.UserRepository;
+import com.smartdental.service.email.SesMailService;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -24,6 +25,7 @@ public class AppointmentService {
 
     private final AppointmentRepository appointmentRepository;
     private final UserRepository userRepository;
+    private final SesMailService sesMailService;
 
     @Transactional(readOnly = true)
     public List<AppointmentResponse> findForPatient(UUID patientId) {
@@ -76,7 +78,9 @@ public class AppointmentService {
         appointment.setNotes(request.notes());
         appointment.setStatus(AppointmentStatus.PENDING);
 
-        return appointmentRepository.save(appointment);
+        Appointment saved = appointmentRepository.save(appointment);
+        sesMailService.sendAppointmentCreated(saved);
+        return saved;
     }
 
     @Transactional
@@ -95,7 +99,14 @@ public class AppointmentService {
         }
 
         appointment.setStatus(newStatus);
-        return appointmentRepository.save(appointment);
+        Appointment saved = appointmentRepository.save(appointment);
+
+        if (newStatus == AppointmentStatus.CANCELLED) {
+            sesMailService.sendAppointmentCancelled(saved);
+        } else {
+            sesMailService.sendAppointmentStatusChanged(saved);
+        }
+        return saved;
     }
 
     @Transactional
