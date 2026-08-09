@@ -8,6 +8,7 @@ public record ClinicalNoteCreateRequest(
         @NotNull UUID patientId,
         UUID appointmentId,
         @NotBlank String shorthand,
+        String aiSummary,
         String cdtCode,
         Integer toothNumber,
         boolean patientVisible) {}

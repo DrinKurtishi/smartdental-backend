@@ -49,6 +49,7 @@ public class ClinicalNoteService {
         note.setPatient(patient);
         note.setDentist(dentist);
         note.setShorthand(request.shorthand());
+        note.setAiSummary(request.aiSummary());
         note.setCdtCode(request.cdtCode());
         note.setToothNumber(request.toothNumber());
         note.setPatientVisible(request.patientVisible());
