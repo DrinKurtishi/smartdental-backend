@@ -11,7 +11,8 @@ public record UserSummaryResponse(
         String lastName,
         String phone,
         Set<String> roles,
-        String authProvider) {
+        String authProvider,
+        boolean enabled) {
 
     public static UserSummaryResponse from(User user) {
         return new UserSummaryResponse(
@@ -21,6 +22,7 @@ public record UserSummaryResponse(
                 user.getLastName(),
                 user.getPhone(),
                 user.getRoles().stream().map(Enum::name).collect(java.util.stream.Collectors.toSet()),
-                user.getAuthProvider().name());
+                user.getAuthProvider().name(),
+                user.isEnabled());
     }
 }
