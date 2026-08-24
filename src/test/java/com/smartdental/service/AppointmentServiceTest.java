@@ -33,6 +33,7 @@ class AppointmentServiceTest {
     @Mock private AppointmentRepository appointmentRepository;
     @Mock private UserRepository userRepository;
     @Mock private SesMailService sesMailService;
+    @Mock private AuditLogService auditLogService;
 
     private AppointmentService appointmentService;
 
@@ -43,7 +44,8 @@ class AppointmentServiceTest {
 
     @BeforeEach
     void setUp() {
-        appointmentService = new AppointmentService(appointmentRepository, userRepository, sesMailService);
+        appointmentService =
+                new AppointmentService(appointmentRepository, userRepository, sesMailService, auditLogService);
 
         patient = buildUser(RoleName.ROLE_PATIENT);
         dentist = buildUser(RoleName.ROLE_DENTIST);
@@ -73,7 +75,7 @@ class AppointmentServiceTest {
         when(userRepository.findById(dentist.getId())).thenReturn(Optional.of(dentist));
         when(appointmentRepository.findOverlapping(eq(dentist.getId()), eq(start), eq(end), isNull()))
                 .thenReturn(List.of());
-        when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(appointmentRepository.save(any(Appointment.class))).thenAnswer(this::assignIdAndReturn);
 
         Appointment created = appointmentService.create(request, patient.getId(), false);
 
@@ -92,12 +94,20 @@ class AppointmentServiceTest {
         when(userRepository.findById(dentist.getId())).thenReturn(Optional.of(dentist));
         when(appointmentRepository.findOverlapping(eq(dentist.getId()), eq(start), eq(end), isNull()))
                 .thenReturn(List.of());
-        when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(appointmentRepository.save(any(Appointment.class))).thenAnswer(this::assignIdAndReturn);
 
         Appointment created = appointmentService.create(request, patient.getId(), false);
 
         assertThat(created.getPatient().getId()).isEqualTo(patient.getId());
         org.mockito.Mockito.verify(userRepository, org.mockito.Mockito.never()).findById(spoofedPatientId);
+    }
+
+    private Appointment assignIdAndReturn(org.mockito.invocation.InvocationOnMock invocation) {
+        Appointment appointment = invocation.getArgument(0);
+        if (appointment.getId() == null) {
+            setId(appointment, UUID.randomUUID());
+        }
+        return appointment;
     }
 
     private User buildUser(RoleName role) {
@@ -110,11 +120,11 @@ class AppointmentServiceTest {
         return user;
     }
 
-    private static void setId(User user, UUID id) {
+    private static void setId(com.smartdental.entity.BaseEntity entity, UUID id) {
         try {
             var field = com.smartdental.entity.BaseEntity.class.getDeclaredField("id");
             field.setAccessible(true);
-            field.set(user, id);
+            field.set(entity, id);
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException(e);
         }

@@ -26,6 +26,7 @@ public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final UserRepository userRepository;
     private final SesMailService sesMailService;
+    private final AuditLogService auditLogService;
 
     @Transactional(readOnly = true)
     public List<AppointmentResponse> findForPatient(UUID patientId) {
@@ -79,6 +80,11 @@ public class AppointmentService {
         appointment.setStatus(AppointmentStatus.PENDING);
 
         Appointment saved = appointmentRepository.save(appointment);
+        auditLogService.recordCurrentActor(
+                "APPOINTMENT_CREATED",
+                "Appointment",
+                saved.getId().toString(),
+                patient.getFullName() + " with Dr. " + dentist.getFullName());
         sesMailService.sendAppointmentCreated(saved);
         return saved;
     }
@@ -100,6 +106,9 @@ public class AppointmentService {
 
         appointment.setStatus(newStatus);
         Appointment saved = appointmentRepository.save(appointment);
+
+        auditLogService.recordCurrentActor(
+                "APPOINTMENT_STATUS_CHANGED", "Appointment", saved.getId().toString(), "Status set to " + newStatus);
 
         if (newStatus == AppointmentStatus.CANCELLED) {
             sesMailService.sendAppointmentCancelled(saved);

@@ -24,6 +24,7 @@ public class AdminUserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuditLogService auditLogService;
 
     @Transactional(readOnly = true)
     public List<UserSummaryResponse> listUsers() {
@@ -46,21 +47,30 @@ public class AdminUserService {
         user.setEnabled(true);
         user.setRoles(parseRoles(request.roles()));
 
-        return UserSummaryResponse.from(userRepository.save(user));
+        User saved = userRepository.save(user);
+        auditLogService.recordCurrentActor(
+                "STAFF_ACCOUNT_CREATED", "User", saved.getId().toString(), "Created " + saved.getEmail());
+        return UserSummaryResponse.from(saved);
     }
 
     @Transactional
     public UserSummaryResponse updateRoles(UUID userId, Set<String> roles) {
         User user = getOrThrow(userId);
         user.setRoles(parseRoles(roles));
-        return UserSummaryResponse.from(userRepository.save(user));
+        User saved = userRepository.save(user);
+        auditLogService.recordCurrentActor(
+                "USER_ROLES_UPDATED", "User", saved.getId().toString(), "Roles set to " + roles);
+        return UserSummaryResponse.from(saved);
     }
 
     @Transactional
     public UserSummaryResponse updateEnabled(UUID userId, boolean enabled) {
         User user = getOrThrow(userId);
         user.setEnabled(enabled);
-        return UserSummaryResponse.from(userRepository.save(user));
+        User saved = userRepository.save(user);
+        auditLogService.recordCurrentActor(
+                enabled ? "USER_ENABLED" : "USER_DISABLED", "User", saved.getId().toString(), saved.getEmail());
+        return UserSummaryResponse.from(saved);
     }
 
     private Set<RoleName> parseRoles(Set<String> roles) {
