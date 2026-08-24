@@ -3,7 +3,6 @@ package com.smartdental.controller;
 import com.smartdental.dto.appointment.AppointmentCreateRequest;
 import com.smartdental.dto.appointment.AppointmentResponse;
 import com.smartdental.dto.appointment.AppointmentStatusUpdateRequest;
-import com.smartdental.entity.Appointment;
 import com.smartdental.entity.enums.AppointmentStatus;
 import com.smartdental.exception.BadRequestException;
 import com.smartdental.exception.ResourceNotFoundException;
@@ -68,8 +67,8 @@ public class AppointmentController {
     public ResponseEntity<AppointmentResponse> create(
             @Valid @RequestBody AppointmentCreateRequest request, @AuthenticationPrincipal UserPrincipal principal) {
         boolean isStaff = isStaff(principal);
-        Appointment created = appointmentService.create(request, principal.getId(), isStaff);
-        return ResponseEntity.status(HttpStatus.CREATED).body(AppointmentResponse.from(created));
+        AppointmentResponse created = appointmentService.create(request, principal.getId(), isStaff);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PatchMapping("/{id}/status")
@@ -77,7 +76,7 @@ public class AppointmentController {
     public AppointmentResponse updateStatus(
             @PathVariable UUID id, @Valid @RequestBody AppointmentStatusUpdateRequest request) {
         AppointmentStatus status = parseStatus(request.status());
-        return AppointmentResponse.from(appointmentService.updateStatus(id, status));
+        return appointmentService.updateStatus(id, status);
     }
 
     @DeleteMapping("/{id}")
@@ -85,7 +84,7 @@ public class AppointmentController {
     public AppointmentResponse cancel(@PathVariable UUID id, @AuthenticationPrincipal UserPrincipal principal) {
         AppointmentResponse existing = appointmentService.findById(id);
         assertPatientOwnsOrIsStaff(existing, principal);
-        return AppointmentResponse.from(appointmentService.cancel(id));
+        return appointmentService.cancel(id);
     }
 
     @GetMapping(value = "/{id}/ics", produces = "text/calendar")

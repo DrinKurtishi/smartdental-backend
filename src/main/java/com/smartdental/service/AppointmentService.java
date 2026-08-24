@@ -55,7 +55,7 @@ public class AppointmentService {
     }
 
     @Transactional
-    public Appointment create(AppointmentCreateRequest request, UUID requesterId, boolean requesterIsStaff) {
+    public AppointmentResponse create(AppointmentCreateRequest request, UUID requesterId, boolean requesterIsStaff) {
         if (!request.endTime().isAfter(request.startTime())) {
             throw new BadRequestException("Appointment end time must be after the start time");
         }
@@ -86,11 +86,11 @@ public class AppointmentService {
                 saved.getId().toString(),
                 patient.getFullName() + " with Dr. " + dentist.getFullName());
         sesMailService.sendAppointmentCreated(saved);
-        return saved;
+        return AppointmentResponse.from(saved);
     }
 
     @Transactional
-    public Appointment updateStatus(UUID appointmentId, AppointmentStatus newStatus) {
+    public AppointmentResponse updateStatus(UUID appointmentId, AppointmentStatus newStatus) {
         Appointment appointment = getAppointmentOrThrow(appointmentId);
 
         if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
@@ -115,11 +115,11 @@ public class AppointmentService {
         } else {
             sesMailService.sendAppointmentStatusChanged(saved);
         }
-        return saved;
+        return AppointmentResponse.from(saved);
     }
 
     @Transactional
-    public Appointment cancel(UUID appointmentId) {
+    public AppointmentResponse cancel(UUID appointmentId) {
         return updateStatus(appointmentId, AppointmentStatus.CANCELLED);
     }
 

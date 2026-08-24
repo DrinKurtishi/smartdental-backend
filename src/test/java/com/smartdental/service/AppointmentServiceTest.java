@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 
 import com.smartdental.dto.appointment.AppointmentCreateRequest;
+import com.smartdental.dto.appointment.AppointmentResponse;
 import com.smartdental.entity.Appointment;
 import com.smartdental.entity.User;
 import com.smartdental.entity.enums.RoleName;
@@ -24,6 +25,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -77,11 +79,14 @@ class AppointmentServiceTest {
                 .thenReturn(List.of());
         when(appointmentRepository.save(any(Appointment.class))).thenAnswer(this::assignIdAndReturn);
 
-        Appointment created = appointmentService.create(request, patient.getId(), false);
+        AppointmentResponse created = appointmentService.create(request, patient.getId(), false);
 
-        assertThat(created.getPatient()).isEqualTo(patient);
-        assertThat(created.getDentist()).isEqualTo(dentist);
-        org.mockito.Mockito.verify(sesMailService).sendAppointmentCreated(created);
+        assertThat(created.patientId()).isEqualTo(patient.getId());
+        assertThat(created.dentistId()).isEqualTo(dentist.getId());
+
+        ArgumentCaptor<Appointment> captor = ArgumentCaptor.forClass(Appointment.class);
+        org.mockito.Mockito.verify(sesMailService).sendAppointmentCreated(captor.capture());
+        assertThat(captor.getValue().getId()).isEqualTo(created.id());
     }
 
     @Test
@@ -96,9 +101,9 @@ class AppointmentServiceTest {
                 .thenReturn(List.of());
         when(appointmentRepository.save(any(Appointment.class))).thenAnswer(this::assignIdAndReturn);
 
-        Appointment created = appointmentService.create(request, patient.getId(), false);
+        AppointmentResponse created = appointmentService.create(request, patient.getId(), false);
 
-        assertThat(created.getPatient().getId()).isEqualTo(patient.getId());
+        assertThat(created.patientId()).isEqualTo(patient.getId());
         org.mockito.Mockito.verify(userRepository, org.mockito.Mockito.never()).findById(spoofedPatientId);
     }
 
