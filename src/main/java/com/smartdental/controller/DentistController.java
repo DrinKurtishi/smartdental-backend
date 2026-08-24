@@ -10,7 +10,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Read-only dentist directory so staff can pick whose calendar to view when scheduling. */
+/**
+ * Read-only dentist directory. Staff use it to pick whose calendar to view when scheduling;
+ * patients use it to pick a dentist when booking their own appointment.
+ */
 @RestController
 @RequestMapping("/api/v1/dentists")
 @RequiredArgsConstructor
@@ -19,7 +22,7 @@ public class DentistController {
     private final UserRepository userRepository;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'DENTIST', 'HYGIENIST')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DENTIST', 'HYGIENIST', 'PATIENT')")
     public List<PatientSummaryResponse> listDentists() {
         return userRepository.findByRolesContainingOrderByLastNameAsc(RoleName.ROLE_DENTIST).stream()
                 .map(PatientSummaryResponse::from)
