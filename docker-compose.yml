@@ -1,0 +1,55 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: smartdental-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-smartdental}
+      POSTGRES_USER: ${DB_USERNAME:-smartdental}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-smartdental}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - smartdental-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-smartdental} -d ${DB_NAME:-smartdental}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smartdental-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-smartdental}
+      DB_USERNAME: ${DB_USERNAME:-smartdental}
+      DB_PASSWORD: ${DB_PASSWORD:-smartdental}
+      JPA_DDL_AUTO: ${JPA_DDL_AUTO:-update}
+      SERVER_PORT: 8080
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-http://localhost:5173}
+      JWT_SECRET: ${JWT_SECRET:-local-development-only-secret-please-change-in-prod-0123456789}
+      # Spring Boot's OAuth2 autoconfiguration rejects an empty client-id at startup, so an
+      # unset value here must still resolve to a syntactically valid placeholder, not "".
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-changeme-google-client-id}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-changeme-google-client-secret}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      SES_SENDER_EMAIL: ${SES_SENDER_EMAIL:-no-reply@smartdental.example.com}
+      SES_ENABLED: ${SES_ENABLED:-false}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AI_PROVIDER: ${AI_PROVIDER:-openai}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_TRANSLATION_ENABLED: ${AI_TRANSLATION_ENABLED:-false}
+      SEED_DATA_ENABLED: ${SEED_DATA_ENABLED:-true}
+
+volumes:
+  smartdental-postgres-data:
