@@ -101,7 +101,7 @@ public class DataInitializer implements CommandLineRunner {
                 patientNguyen, drRivera, pastCompleted, 14,
                 "Tooth #14 DO composite, deep caries. Local anesthesia, no complications.",
                 "D2394",
-                "We treated a cavity on the back-left upper tooth using a tooth-colored filling. "
+                "We treated a cavity on the back-left lower tooth using a tooth-colored filling. "
                         + "The procedure went smoothly with local numbing, and there were no complications. "
                         + "Mild sensitivity for a few days is normal.",
                 true);
