@@ -86,7 +86,7 @@ public class DataInitializer implements CommandLineRunner {
         Instant now = Instant.now();
         Appointment upcomingConfirmed = seedAppointment(
                 patientNguyen, drRivera, now.plus(2, ChronoUnit.DAYS), 60,
-                "Routine cleaning and checkup", AppointmentStatus.CONFIRMED);
+                "Routine cleaning and checkup appointment", AppointmentStatus.CONFIRMED);
         Appointment upcomingPending = seedAppointment(
                 patientKovac, drChen, now.plus(4, ChronoUnit.DAYS), 45,
                 "Tooth pain evaluation", AppointmentStatus.PENDING);
