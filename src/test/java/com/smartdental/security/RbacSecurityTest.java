@@ -96,6 +96,23 @@ class RbacSecurityTest {
                 .andExpect(status().isForbidden());
     }
 
+    @Test
+    void aStillValidTokenIsRejectedOnceTheAccountIsDisabled() throws Exception {
+        User dentist = persistUser("rbac.disabled-dentist@smartdental.example.com", RoleName.ROLE_DENTIST);
+        String tokenIssuedWhileEnabled = jwtService.generateAccessToken(dentist);
+
+        mockMvc
+                .perform(get("/api/v1/auth/me").header("Authorization", "Bearer " + tokenIssuedWhileEnabled))
+                .andExpect(status().isOk());
+
+        dentist.setEnabled(false);
+        userRepository.save(dentist);
+
+        mockMvc
+                .perform(get("/api/v1/auth/me").header("Authorization", "Bearer " + tokenIssuedWhileEnabled))
+                .andExpect(status().isUnauthorized());
+    }
+
     private User persistUser(String email, RoleName role) {
         User user = new User();
         user.setEmail(email);
@@ -104,7 +121,7 @@ class RbacSecurityTest {
         user.setLastName("User");
         user.setAuthProvider(AuthProvider.LOCAL);
         user.setEnabled(true);
-        user.setRoles(Set.of(role));
+        user.setRoles(new java.util.HashSet<>(Set.of(role)));
         return userRepository.save(user);
     }
 }
