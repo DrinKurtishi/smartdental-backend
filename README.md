@@ -65,7 +65,7 @@ All variables have safe local defaults (see [`.env.example`](.env.example)) exce
 | `SERVER_PORT` | HTTP port | `8080` |
 | `CORS_ALLOWED_ORIGINS` | Comma-separated allowed origins | `http://localhost:5173` |
 | `FRONTEND_BASE_URL` | Used for OAuth2 redirect target | `http://localhost:5173` |
-| `JWT_SECRET` | HMAC signing key (**required** in production) | dev-only placeholder |
+| `JWT_SECRET` | HMAC signing key — **no default in the app itself; startup fails without it.** `docker compose up --build` supplies a local-only value for you | *(none — see docker-compose.yml for the local value)* |
 | `JWT_ACCESS_EXPIRATION_MS` | Access token TTL | `3600000` (1h) |
 | `JWT_REFRESH_EXPIRATION_MS` | Refresh token TTL | `604800000` (7d) |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth2 app credentials | empty (Google login disabled) |

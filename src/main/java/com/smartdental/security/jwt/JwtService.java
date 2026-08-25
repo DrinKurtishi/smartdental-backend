@@ -7,6 +7,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
@@ -24,6 +25,15 @@ import org.springframework.stereotype.Service;
 public class JwtService {
 
     private final JwtProperties jwtProperties;
+
+    /**
+     * Builds the signing key once at startup so a missing/unresolved JWT_SECRET (or one too
+     * short for HS256) fails the Spring context immediately, instead of on the first login.
+     */
+    @PostConstruct
+    void validateSigningKey() {
+        signingKey();
+    }
 
     private Key signingKey() {
         return Keys.hmacShaKeyFor(jwtProperties.secret().getBytes(StandardCharsets.UTF_8));

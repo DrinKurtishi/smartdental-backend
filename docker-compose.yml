@@ -36,6 +36,9 @@ services:
       SERVER_PORT: 8080
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
       FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-http://localhost:5173}
+      # Local-only fallback so `docker compose up --build` needs zero setup. application.yml
+      # itself has no default for this — production always supplies a real value via the .env
+      # file the deploy workflow writes from GitHub Secrets (see DEPLOYMENT.md).
       JWT_SECRET: ${JWT_SECRET:-local-development-only-secret-please-change-in-prod-0123456789}
       # Spring Boot's OAuth2 autoconfiguration rejects an empty client-id at startup, so an
       # unset value here must still resolve to a syntactically valid placeholder, not "".
