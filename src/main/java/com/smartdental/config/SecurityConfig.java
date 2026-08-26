@@ -5,6 +5,7 @@ import com.smartdental.security.JsonAccessDeniedHandler;
 import com.smartdental.security.JsonAuthenticationEntryPoint;
 import com.smartdental.security.jwt.JwtAuthenticationFilter;
 import com.smartdental.security.oauth2.CustomOAuth2UserService;
+import com.smartdental.security.oauth2.CustomOidcUserService;
 import com.smartdental.security.oauth2.OAuth2LoginFailureHandler;
 import com.smartdental.security.oauth2.OAuth2LoginSuccessHandler;
 import java.util.Arrays;
@@ -36,6 +37,7 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomOidcUserService customOidcUserService;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -107,7 +109,8 @@ public class SecurityConfig {
                         auth -> auth.requestMatchers(PUBLIC_ENDPOINTS).permitAll().anyRequest().fullyAuthenticated())
                 .oauth2Login(
                         oauth2 ->
-                                oauth2.userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                                oauth2.userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService)
+                                                .oidcUserService(customOidcUserService))
                                         .successHandler(oAuth2LoginSuccessHandler)
                                         .failureHandler(oAuth2LoginFailureHandler))
                 .authenticationProvider(authenticationProvider())
