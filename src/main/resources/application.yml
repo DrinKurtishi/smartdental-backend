@@ -39,6 +39,9 @@ spring:
 
 server:
   port: ${SERVER_PORT:8080}
+  # nginx terminates TLS and forwards plain HTTP; without this Tomcat sees every request as
+  # http://, so Spring Security builds OAuth2 redirect_uri values Google rejects as http:// too.
+  forward-headers-strategy: framework
   error:
     include-message: always
     include-binding-errors: always
