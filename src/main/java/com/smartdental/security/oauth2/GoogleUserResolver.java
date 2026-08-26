@@ -4,6 +4,7 @@ import com.smartdental.entity.User;
 import com.smartdental.entity.enums.AuthProvider;
 import com.smartdental.entity.enums.RoleName;
 import com.smartdental.repository.UserRepository;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -52,7 +53,9 @@ final class GoogleUserResolver {
         user.setFirstName(givenName != null ? givenName : "Google");
         user.setLastName(familyName != null ? familyName : "User");
         user.setEnabled(true);
-        user.setRoles(Set.of(RoleName.ROLE_PATIENT));
+        // Hibernate's PersistentSet wraps this field and calls .clear() on it when the entity is
+        // saved again later in resolve() — Set.of() is immutable and throws UnsupportedOperationException.
+        user.setRoles(new HashSet<>(Set.of(RoleName.ROLE_PATIENT)));
         return userRepository.save(user);
     }
 }

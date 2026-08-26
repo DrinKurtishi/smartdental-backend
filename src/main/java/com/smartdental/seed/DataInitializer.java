@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -134,7 +135,7 @@ public class DataInitializer implements CommandLineRunner {
         user.setPhone(phone);
         user.setAuthProvider(AuthProvider.LOCAL);
         user.setEnabled(true);
-        user.setRoles(Set.of(role));
+        user.setRoles(new HashSet<>(Set.of(role)));
         return userRepository.save(user);
     }
 

@@ -11,6 +11,7 @@ import com.smartdental.exception.ConflictException;
 import com.smartdental.repository.UserRepository;
 import com.smartdental.security.UserPrincipal;
 import com.smartdental.security.jwt.JwtService;
+import java.util.HashSet;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -41,7 +42,7 @@ public class AuthService {
         user.setLastName(request.lastName());
         user.setPhone(request.phone());
         user.setAuthProvider(AuthProvider.LOCAL);
-        user.setRoles(Set.of(RoleName.ROLE_PATIENT));
+        user.setRoles(new HashSet<>(Set.of(RoleName.ROLE_PATIENT)));
         user.setEnabled(true);
 
         User saved = userRepository.save(user);
