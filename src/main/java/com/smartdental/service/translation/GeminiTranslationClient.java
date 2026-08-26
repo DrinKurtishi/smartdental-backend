@@ -41,8 +41,8 @@ public class GeminiTranslationClient implements AiTranslationClient {
                                     uriBuilder ->
                                             uriBuilder
                                                     .path("/models/{model}:generateContent")
-                                                    .queryParam("key", properties.apiKey())
                                                     .build(properties.model()))
+                            .header("x-goog-api-key", properties.apiKey())
                             .bodyValue(body)
                             .retrieve()
                             .bodyToMono(Map.class)
